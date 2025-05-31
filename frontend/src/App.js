@@ -1890,6 +1890,283 @@ const WeeklyActivityGroupScreen = ({ group, user, onBack, darkMode }) => {
   );
 };
 
+// Friends Screen Component
+const FriendsScreen = ({ user, darkMode }) => {
+  const [activeTab, setActiveTab] = useState('following');
+  const [following, setFollowing] = useState([]);
+  const [followers, setFollowers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddFriends, setShowAddFriends] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const loadFriends = async () => {
+    try {
+      const [followingRes, followersRes] = await Promise.all([
+        axios.get(`${API}/users/${user.id}/following`),
+        axios.get(`${API}/users/${user.id}/followers`)
+      ]);
+      
+      setFollowing(followingRes.data || []);
+      setFollowers(followersRes.data || []);
+    } catch (error) {
+      console.error('Failed to load friends:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchUsers = async (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/users/search?q=${encodeURIComponent(query)}`);
+      // Filter out current user and already following users
+      const followingIds = following.map(f => f.id);
+      const filtered = (response.data || []).filter(u => 
+        u.id !== user.id && !followingIds.includes(u.id)
+      );
+      setSearchResults(filtered);
+    } catch (error) {
+      console.error('Failed to search users:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const followUser = async (targetUserId) => {
+    try {
+      const formData = new FormData();
+      formData.append('follower_id', user.id);
+
+      const response = await axios.post(`${API}/users/${targetUserId}/follow`, formData);
+      
+      if (response.data.success) {
+        alert('Successfully followed user! 🎉');
+        await loadFriends(); // Reload friends list
+        await searchUsers(searchQuery); // Refresh search results
+      }
+    } catch (error) {
+      console.error('Failed to follow user:', error);
+      alert(error.response?.data?.detail || 'Failed to follow user');
+    }
+  };
+
+  const unfollowUser = async (targetUserId) => {
+    try {
+      const formData = new FormData();
+      formData.append('follower_id', user.id);
+
+      const response = await axios.post(`${API}/users/${targetUserId}/unfollow`, formData);
+      
+      if (response.data.success) {
+        alert('Successfully unfollowed user');
+        await loadFriends(); // Reload friends list
+      }
+    } catch (error) {
+      console.error('Failed to unfollow user:', error);
+      alert(error.response?.data?.detail || 'Failed to unfollow user');
+    }
+  };
+
+  useEffect(() => {
+    loadFriends();
+  }, [user.id]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      searchUsers(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, following]);
+
+  const renderUserCard = (userItem, showUnfollow = false) => (
+    <div key={userItem.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div 
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+            style={{ backgroundColor: userItem.avatar_color }}
+          >
+            {userItem.username.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white">{userItem.full_name}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">@{userItem.username}</p>
+          </div>
+        </div>
+        {showUnfollow ? (
+          <button
+            onClick={() => unfollowUser(userItem.id)}
+            className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-colors text-sm"
+          >
+            Unfollow
+          </button>
+        ) : (
+          <button
+            onClick={() => followUser(userItem.id)}
+            className="bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+          >
+            Follow
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Friends</h1>
+          <button
+            onClick={() => setShowAddFriends(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+          >
+            Add Friends
+          </button>
+        </div>
+        
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab('following')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'following'
+                ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400'
+                : 'text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            Following ({following.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('followers')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'followers'
+                ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400'
+                : 'text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            Followers ({followers.length})
+          </button>
+        </div>
+      </div>
+
+      {/* Add Friends Modal */}
+      {showAddFriends && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Friends</h2>
+              <button
+                onClick={() => {
+                  setShowAddFriends(false);
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search by username or name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            {searchLoading && (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {searchResults.length === 0 && searchQuery.length >= 2 && !searchLoading && (
+                <p className="text-center text-gray-600 dark:text-gray-400 py-4">
+                  No users found matching "{searchQuery}"
+                </p>
+              )}
+              
+              {searchQuery.length < 2 && !searchLoading && (
+                <p className="text-center text-gray-600 dark:text-gray-400 py-4">
+                  Type at least 2 characters to search for friends
+                </p>
+              )}
+
+              {searchResults.map((userItem) => renderUserCard(userItem, false))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Friends List */}
+      <div className="p-4">
+        {activeTab === 'following' && (
+          <div className="space-y-4">
+            {following.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">👥</div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Friends Yet</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Follow friends to see their activity completions!
+                </p>
+                <button
+                  onClick={() => setShowAddFriends(true)}
+                  className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Find Friends
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {following.map((userItem) => renderUserCard(userItem, true))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'followers' && (
+          <div className="space-y-4">
+            {followers.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📢</div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Followers Yet</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Share your activities to attract followers!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {followers.map((userItem) => renderUserCard(userItem, false))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab, notifications, onPhotoClick, darkMode }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -1900,7 +2177,7 @@ const Navigation = ({ activeTab, setActiveTab, notifications, onPhotoClick, dark
         {[
           { id: 'feed', icon: '🏠', label: 'Home' },
           { id: 'groups', icon: '👥', label: 'Groups' },
-          { id: 'photo', icon: '📸', label: 'Photo' },
+          { id: 'friends', icon: '🤝', label: 'Friends' },
           { id: 'notifications', icon: '🔔', label: 'Notifications' },
           { id: 'profile', icon: '👤', label: 'Profile' }
         ].map((tab) => (
