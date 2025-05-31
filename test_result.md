@@ -101,3 +101,63 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the ACTIFY fitness app backend authentication system. The backend is running on http://localhost:8001 and I need to verify: 1. User registration endpoint: POST /api/users with username, password, email, full_name 2. User login endpoint: POST /api/login with username and password 3. Test with these credentials: username='testuser', password='password123', email='test@example.com', full_name='Test User' 4. Verify that login returns session_id and user data with message 'Login successful' 5. Check that invalid credentials return proper error messages 6. Test the health endpoint: GET /api/health"
+
+backend:
+  - task: "Health Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Health endpoint is working correctly. Returns status 'healthy' and a timestamp."
+
+  - task: "User Registration"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "User registration endpoint is working correctly. Successfully registered a test user and verified that duplicate registration returns an appropriate error."
+
+  - task: "User Login"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Login endpoint is working correctly. Successfully logged in with valid credentials and received a session_id and user data. Also verified that invalid credentials return appropriate error messages."
+
+frontend:
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Health Endpoint"
+    - "User Registration"
+    - "User Login"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "I've tested the backend authentication system as requested. All endpoints are working correctly. The health endpoint returns a 200 status code with 'healthy' status. User registration works and prevents duplicate registrations. Login works with valid credentials and returns a session_id and user data. Invalid login attempts are properly rejected with 401 status codes."
