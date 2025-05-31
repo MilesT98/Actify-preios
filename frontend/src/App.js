@@ -1986,6 +1986,16 @@ const FriendsScreen = ({ user, darkMode }) => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, following]);
 
+  // Listen for trigger from Profile screen Add Friends button
+  useEffect(() => {
+    const handleTriggerAddFriends = () => {
+      setShowAddFriends(true);
+    };
+
+    window.addEventListener('triggerAddFriends', handleTriggerAddFriends);
+    return () => window.removeEventListener('triggerAddFriends', handleTriggerAddFriends);
+  }, []);
+
   const renderUserCard = (userItem, showUnfollow = false) => (
     <div key={userItem.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
       <div className="flex items-center justify-between">
