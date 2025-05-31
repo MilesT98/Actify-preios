@@ -2268,19 +2268,32 @@ const ProfileScreen = ({ user, onLogout, darkMode, setDarkMode }) => {
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="space-y-3">
             <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => {
+                // Navigate to friends tab and open add friends modal
+                // This will be handled by the parent component
+                window.dispatchEvent(new CustomEvent('openAddFriends'));
+              }}
+              className="w-full bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
             >
-              {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              🤝 Add Friends
             </button>
-            <button
-              onClick={onLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Logout
-            </button>
+            
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              </button>
+              <button
+                onClick={onLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>
