@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the ACTIFY fitness app backend authentication system. The backend is running on http://localhost:8001 and I need to verify: 1. User registration endpoint: POST /api/users with username, password, email, full_name 2. User login endpoint: POST /api/login with username and password 3. Test with these credentials: username='testuser', password='password123', email='test@example.com', full_name='Test User' 4. Verify that login returns session_id and user data with message 'Login successful' 5. Check that invalid credentials return proper error messages 6. Test the health endpoint: GET /api/health"
+user_problem_statement: "Test the ACTIFY fitness app backend after implementing Friends functionality and fixing the daily global activity 500 error: CRITICAL TESTS: 1. Authentication endpoints (login/signup) - ensure still working 2. Friends/Follow system endpoints: - GET /api/users/{user_id}/following - GET /api/users/{user_id}/followers - GET /api/users/search?q={query} - POST /api/users/{user_id}/follow - POST /api/users/{user_id}/unfollow 3. Daily global activity endpoint (fixed 500 error): - GET /api/daily-global-activity/current 4. Activity dataset initialization: - POST /api/admin/initialize-activities TEST SCENARIOS: - Create test users and test follow/unfollow relationships - Search for users and verify results - Test daily global activity retrieval - Verify activity dataset has been properly initialized (270 activities) - Check all endpoints return proper JSON responses - Test error handling for invalid requests BACKEND STATUS: - Backend running on localhost:8001 - MongoDB connected and working - Friends functionality recently added to frontend - Daily global activity dataset initialized with 270 activities Focus on testing the Friends system thoroughly and confirming the 500 error is resolved."
 
 backend:
   - task: "Health Endpoint"
@@ -116,6 +116,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Health endpoint is working correctly. Returns status 'healthy' and a timestamp."
+      - working: true
+        agent: "testing"
+        comment: "Health endpoint is still working correctly. Returns status 'healthy' and a timestamp."
 
   - task: "User Registration"
     implemented: true
@@ -128,6 +131,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "User registration endpoint is working correctly. Successfully registered a test user and verified that duplicate registration returns an appropriate error."
+      - working: true
+        agent: "testing"
+        comment: "User registration endpoint is still working correctly. Successfully registered two test users with unique usernames and emails."
 
   - task: "User Login"
     implemented: true
@@ -140,6 +146,105 @@ backend:
       - working: true
         agent: "testing"
         comment: "Login endpoint is working correctly. Successfully logged in with valid credentials and received a session_id and user data. Also verified that invalid credentials return appropriate error messages."
+      - working: true
+        agent: "testing"
+        comment: "Login endpoint is still working correctly. Successfully logged in with newly created test users and received session_id and user data."
+
+  - task: "User Search"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "User search endpoint is working correctly. Successfully searched for users by partial username and received matching results."
+
+  - task: "Follow User"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Follow user endpoint is working correctly. Successfully followed a user and received confirmation of the follow relationship."
+
+  - task: "Unfollow User"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Unfollow user endpoint is working correctly. Successfully unfollowed a user and received confirmation of the unfollow action."
+
+  - task: "Get Following"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Get following endpoint is working correctly. Successfully retrieved the list of users that a user is following."
+
+  - task: "Get Followers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Get followers endpoint is working correctly. Successfully retrieved the list of users following a specific user."
+
+  - task: "Follow Status"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Follow status endpoint is working correctly. Successfully checked if a user is following another user and verified the status changes after follow/unfollow actions."
+
+  - task: "Daily Global Activity"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Daily global activity endpoint is working correctly. Successfully retrieved the current daily global activity with no 500 error."
+
+  - task: "Initialize Activities"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Initialize activities endpoint is working correctly. Successfully initialized 270 activities in the dataset."
 
 frontend:
   - task: "Frontend Authentication"
@@ -157,15 +262,18 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Health Endpoint"
-    - "User Registration"
-    - "User Login"
-    - "Frontend Authentication"
+    - "Follow User"
+    - "Unfollow User"
+    - "Get Following"
+    - "Get Followers"
+    - "Follow Status"
+    - "Daily Global Activity"
+    - "Initialize Activities"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
@@ -175,3 +283,5 @@ agent_communication:
     message: "I've tested the backend authentication system as requested. All endpoints are working correctly. The health endpoint returns a 200 status code with 'healthy' status. User registration works and prevents duplicate registrations. Login works with valid credentials and returns a session_id and user data. Invalid login attempts are properly rejected with 401 status codes."
   - agent: "testing"
     message: "I've completed testing the frontend authentication functionality. The login form is properly displayed at http://localhost:3000, and I was able to successfully log in with the test credentials (username='testuser', password='password123'). After authentication, the user is redirected to the main interface with the Friends tab visible. There are some non-critical console errors related to WebSocket connections and daily activity data, but they don't affect the core authentication functionality. The frontend authentication is working as expected."
+  - agent: "testing"
+    message: "I've completed testing the Friends functionality and daily global activity endpoints. All endpoints are working correctly. The Friends system allows users to follow/unfollow other users, check follow status, and retrieve lists of followers and following users. The daily global activity endpoint is working without any 500 error, and the initialize activities endpoint successfully created 270 activities in the dataset. All tests passed successfully."
