@@ -2335,6 +2335,20 @@ const App = () => {
     initializeApp();
   }, []);
 
+  // Listen for Add Friends event from Profile screen
+  useEffect(() => {
+    const handleOpenAddFriends = () => {
+      setActiveTab('friends');
+      // Trigger add friends modal in FriendsScreen
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('triggerAddFriends'));
+      }, 100);
+    };
+
+    window.addEventListener('openAddFriends', handleOpenAddFriends);
+    return () => window.removeEventListener('openAddFriends', handleOpenAddFriends);
+  }, []);
+
   const handleLogin = (newUser) => {
     setUser(newUser);
     localStorage.setItem('actify_user', JSON.stringify(newUser));
