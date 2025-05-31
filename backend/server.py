@@ -1555,17 +1555,14 @@ async def get_daily_global_activity_feed(
         following_docs = await db.follows.find({"follower_id": user_id}).to_list(None)
         following_ids = [follow["following_id"] for follow in following_docs]
         
+        # Include the user's own posts along with friends' posts
+        following_ids.append(user_id)
+        
         if following_ids:
             completions_query["user_id"] = {"$in": following_ids}
         else:
-            # No friends, return empty feed
-            return {
-                "status": "unlocked",
-                "activity": daily_activity,
-                "completions": [],
-                "friends_count": 0,
-                "message": "No friends have completed this activity yet"
-            }
+            # Only show user's own posts if they have no friends
+            completions_query["user_id"] = user_id
     
     # Get completions
     completions = await global_activity_completions_collection.find(
