@@ -2347,6 +2347,7 @@ const App = () => {
         <div className="flex-1 overflow-hidden">
           {activeTab === 'feed' && <FeedScreen user={user} />}
           {activeTab === 'groups' && <GroupsScreen user={user} darkMode={darkMode} />}
+          {activeTab === 'friends' && <FriendsScreen user={user} darkMode={darkMode} />}
           {activeTab === 'notifications' && <NotificationsScreen user={user} notifications={notifications} setNotifications={setNotifications} />}
           {activeTab === 'profile' && <ProfileScreen user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} />}
         </div>
