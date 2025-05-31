@@ -1386,6 +1386,11 @@ async def initialize_activity_dataset():
         "count": len(activity_docs)
     }
 
+@api_router.post("/admin/initialize-activities")
+async def init_activities():
+    """Initialize the activity dataset (admin function)"""
+    return await initialize_activity_dataset()
+
 @api_router.get("/daily-global-activity/current")
 async def get_current_daily_global_activity():
     """Get today's global activity"""
