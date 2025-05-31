@@ -37,6 +37,11 @@ activity_dataset_collection = db.activity_dataset
 # Create the main app
 app = FastAPI(title="ACTIFY API", version="1.0.0")
 
+# Add root endpoint for platform health checks
+@app.get("/")
+async def read_root():
+    return {"status": "ACTIFY Backend Running", "version": "1.0.0"}
+
 # NEW: Follow model
 class Follow(BaseModel):
     follower_id: str
