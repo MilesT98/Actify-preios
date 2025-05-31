@@ -165,6 +165,7 @@ test_plan:
     - "Health Endpoint"
     - "User Registration"
     - "User Login"
+    - "Frontend Authentication"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
